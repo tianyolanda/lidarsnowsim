@@ -1,0 +1,6 @@
+.
+./backup
+./gt_database_None
+./gt_database_train_clear
+./ImageSets
+./pkl

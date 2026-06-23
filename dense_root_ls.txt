@@ -1,0 +1,15 @@
+total 42M
+-rw-rw-r-- 1 ubuntu ubuntu 4.3M 3月  19  2025 8th_run.log
+drwxrwxr-x 2 ubuntu ubuntu 4.0K 3月  18  2025 backup
+-rw-rw-r-- 1 ubuntu ubuntu  884 2月  22  2024 calib_hdl64.txt
+-rw-rw-r-- 1 ubuntu ubuntu  880 2月  22  2024 calib_vlp32.txt
+-rw-rw-r-- 1 ubuntu ubuntu 8.4M 3月  12  2024 dense_dbinfos_train_clear.pkl
+-rw-rw-r-- 1 ubuntu ubuntu 7.0M 3月  14  2024 dense_infos_test_snow.pkl
+-rw-rw-r-- 1 ubuntu ubuntu 8.1M 3月  17  2024 dense_infos_train_clear.pkl
+-rw-rw-r-- 1 ubuntu ubuntu  10M 3月  13  2024 dense_infos_trainval_clear.pkl
+-rw-rw-r-- 1 ubuntu ubuntu 1.9M 3月  13  2024 dense_infos_val_clear.pkl
+drwxrwxr-x 2 ubuntu ubuntu 4.0K 3月  11  2024 gt_database_None
+drwxrwxr-x 2 ubuntu ubuntu 1.7M 3月  12  2024 gt_database_train_clear
+drwxrwxr-x 2 ubuntu ubuntu 4.0K 3月  14  2024 ImageSets
+drwxrwxr-x 2 ubuntu ubuntu 4.0K 2月  22  2024 pkl
+-rw-rw-r-- 1 ubuntu ubuntu  225 3月  10  2025 wget
