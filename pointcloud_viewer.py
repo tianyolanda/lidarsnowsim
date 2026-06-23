@@ -33,9 +33,8 @@ import pyqtgraph.opengl as gl
 
 from glob import glob
 from pathlib import Path
-from pprint import pprint
 from plyfile import PlyData
-from typing import List, Dict
+from typing import List
 
 from PyQt5.QtGui import *
 from PyQt5.QtCore import *
@@ -46,7 +45,7 @@ from lib.LISA.python.lisa import LISA
 
 from lib.cadc_devkit.other.create_image_sets import DROR_LEVELS
 
-from lib.OpenPCDet.pcdet.utils import calibration_kitti
+from pcdet.utils import calibration_kitti
 
 
 from lib.LiDAR_fog_sim.fog_simulation import ParameterSet, simulate_fog
@@ -156,7 +155,8 @@ AUDI = DATASETS_ROOT / 'A2D2/camera_lidar_semantic_bboxes'
 LYFT = DATASETS_ROOT / 'LyftLevel5/Perception/train_lidar'
 ARGO = DATASETS_ROOT / 'Argoverse'
 PANDA = DATASETS_ROOT / 'PandaSet'
-DENSE = DATASETS_ROOT / 'DENSE/SeeingThroughFog/lidar_hdl64_strongest'
+# DENSE = DATASETS_ROOT / 'DENSE/SeeingThroughFog/lidar_hdl64_strongest'
+DENSE = DATASETS_ROOT / 'DENSE/training/lidar_hdl64_strongest'
 KITTI = DATASETS_ROOT / 'KITTI/3D/training/velodyne'
 WAYMO = DATASETS_ROOT / 'WaymoOpenDataset/WOD/train/velodyne'
 HONDA = DATASETS_ROOT / 'Honda_3D/scenarios'

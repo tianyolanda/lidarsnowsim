@@ -16,3 +16,9 @@ tools/wet_ground/example_data/
 # Byte-compiled / optimized / DLL files
 __pycache__/
 *.py[cod]
+
+# data
+lib/OpenPCDet/data/
+
+# my data
+tia_files/

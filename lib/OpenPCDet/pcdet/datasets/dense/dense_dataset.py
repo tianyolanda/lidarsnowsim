@@ -1,5 +1,11 @@
 import logging
-
+import sys
+import os
+current_dir = os.path.split(os.path.abspath(__file__))[0] # current dir
+config_path = current_dir.rsplit('/',5)[0]
+sys.path.append(config_path)
+# print(config_path)
+# print(sys.path)
 import scipy.stats as stats
 
 from skimage import io
@@ -10,7 +16,6 @@ from pcdet.datasets.dataset import DatasetTemplate, nth_repl
 from pcdet.ops.roiaware_pool3d import roiaware_pool3d_utils
 from pcdet.utils import box_utils, calibration_kitti, common_utils, object3d_kitti
 
-from tools.snowfall.simulation import augment
 from tools.wet_ground.augmentation import ground_water_augmentation
 from tools.snowfall.sampling import snowfall_rate_to_rainfall_rate, compute_occupancy
 from lib.LISA.python.lisa import LISA
@@ -161,7 +166,8 @@ class DenseDataset(DatasetTemplate):
             self.sample_id_list = ['_'.join(x.strip().split(',')) for x in open(split_dir).readlines()]
         else:
             self.sample_id_list = None
-
+        print('split_dir',split_dir)
+        # print(self.sample_id_list)
     def get_lidar(self, idx):
         lidar_file = self.root_split_path / self.lidar_folder / ('%s.bin' % idx)
         assert lidar_file.exists(), f'{lidar_file} not found'
@@ -316,9 +322,14 @@ class DenseDataset(DatasetTemplate):
 
             return info
 
+        print(sample_id_list)
+        print(self.sample_id_list)
+
         sample_id_list = sample_id_list if sample_id_list is not None else self.sample_id_list
+        # print(sample_id_list)
 
         with futures.ThreadPoolExecutor(num_workers) as executor:
+            print(sample_id_list)
             infos = list(tqdm(executor.map(process_single_scene, sample_id_list), total=len(sample_id_list)))
 
         filtered_for_none_infos = [info for info in infos if info]
@@ -1061,7 +1072,7 @@ def drop_infos_with_no_points(info):
 
 def create_dense_infos(dataset_cfg, class_names, data_path, save_path, logger,
                        workers=cpu_count(), suffix: str='', addon: str='',
-                       train: bool=False, val: bool=False, test: bool=True, just_dror: bool=True, gt: bool=False):
+                       train: bool=False, val: bool=False, test: bool=True, just_dror: bool=False, gt: bool=True):
 
     dataset = DenseDataset(dataset_cfg=dataset_cfg, class_names=class_names, root_path=data_path, training=False)
 
@@ -1082,129 +1093,129 @@ def create_dense_infos(dataset_cfg, class_names, data_path, save_path, logger,
 
         logger.info(f'{all_filename} saved')
 
-    for time in ['day', 'night']:
-
-        logger.info(f'starting to process {time}time scenes')
-
-        train_split, train_filename = None, None
-        dense_infos_train, dense_infos_val = None, None
-
-        # train split
-        if train:
-
-            train_split = f'train_clear_{time}{suffix}{addon}'
-            train_filename = save_path / f'dense_infos_{train_split}.pkl'
-
-            dataset.set_split(train_split)
-            dense_infos_train = dataset.get_infos(logger, num_workers=workers,
-                                                  has_label=True, count_inside_pts=True)
-
-            with open(train_filename, 'wb') as f:
-                pickle.dump(dense_infos_train, f)
-
-            logger.info(f'{train_filename} saved')
-
-        # val split
-        if val:
-
-            val_split = f'val_clear_{time}{suffix}{addon}'
-            val_filename = save_path / f'dense_infos_{val_split}.pkl'
-
-            dataset.set_split(val_split)
-            dense_infos_val = dataset.get_infos(logger, num_workers=workers,
-                                                has_label=True, count_inside_pts=True)
-
-            with open(val_filename, 'wb') as f:
-                pickle.dump(dense_infos_val, f)
-
-            logger.info(f'{val_filename} saved')
-
-        # trainval concatination
-        if train and val:
-
-            trainval_filename = save_path / f'dense_infos_trainval_clear_{time}{suffix}{addon}.pkl'
-
-            with open(trainval_filename, 'wb') as f:
-                pickle.dump(dense_infos_train + dense_infos_val, f)
-
-            logger.info(f'{trainval_filename} saved')
-
-        # test splits
-        if test:
-
-            for condition in ['clear', 'light_fog', 'dense_fog', 'snow']:
-
-                for alpha in [0.45]:
-
-                    for severety in ['none', 'light', 'heavy']:
-
-                        for dror in ['', f'_dror_alpha_{alpha}_{severety}']:
-
-                            # make sure non-snow splits do not consider dror
-                            if condition != 'snow' and dror != '':
-                                continue
-
-                            # skip non-dror splits
-                            if just_dror and dror == '':
-                                continue
-
-                            test_split = f'test_{condition}_{time}{suffix}{addon}{dror}'
-                            test_filename = save_path / f'dense_infos_{test_split}.pkl'
-
-                            dataset.sample_id_list = None
-
-                            dataset.set_split(test_split)
-
-                            # skip the splits that do not exist
-                            if dataset.sample_id_list is None:
-                                logger.warning(f'{test_split} does not exist')
-                                continue
-
-                            dense_infos_test = dataset.get_infos(logger, num_workers=workers,
-                                                                 has_label=True, count_inside_pts=True)
-
-                            with open(test_filename, 'wb') as f:
-                                pickle.dump(dense_infos_test, f)
-
-                            logger.info(f'{test_filename} saved')
-
-        if train and gt:
-
-            logger.info('starting to create groundtruth database for data augmentation')
-
-            dataset.set_split(train_split)
-            dataset.create_groundtruth_database(logger, info_path=train_filename, split=train_split)
-
-            logger.info(f'data preparation for {time}time scenes finished')
+    # for time in ['day', 'night']:
+    #
+    #     logger.info(f'starting to process {time}time scenes')
+    #
+    #     train_split, train_filename = None, None
+    #     dense_infos_train, dense_infos_val = None, None
+    #
+    #     # train split
+    #     if train:
+    #
+    #         train_split = f'train_clear_{time}{suffix}{addon}'
+    #         train_filename = save_path / f'dense_infos_{train_split}.pkl'
+    #
+    #         dataset.set_split(train_split)
+    #         dense_infos_train = dataset.get_infos(logger, num_workers=workers,
+    #                                               has_label=True, count_inside_pts=True)
+    #
+    #         with open(train_filename, 'wb') as f:
+    #             pickle.dump(dense_infos_train, f)
+    #
+    #         logger.info(f'{train_filename} saved')
+    #
+    #     # val split
+    #     if val:
+    #
+    #         val_split = f'val_clear_{time}{suffix}{addon}'
+    #         val_filename = save_path / f'dense_infos_{val_split}.pkl'
+    #
+    #         dataset.set_split(val_split)
+    #         dense_infos_val = dataset.get_infos(logger, num_workers=workers,
+    #                                             has_label=True, count_inside_pts=True)
+    #
+    #         with open(val_filename, 'wb') as f:
+    #             pickle.dump(dense_infos_val, f)
+    #
+    #         logger.info(f'{val_filename} saved')
+    #
+    #     # trainval concatination
+    #     if train and val:
+    #
+    #         trainval_filename = save_path / f'dense_infos_trainval_clear_{time}{suffix}{addon}.pkl'
+    #
+    #         with open(trainval_filename, 'wb') as f:
+    #             pickle.dump(dense_infos_train + dense_infos_val, f)
+    #
+    #         logger.info(f'{trainval_filename} saved')
+    #
+    #     # test splits
+    #     if test:
+    #
+    #         for condition in ['clear', 'light_fog', 'dense_fog', 'snow']:
+    #
+    #             for alpha in [0.45]:
+    #
+    #                 for severety in ['none', 'light', 'heavy']:
+    #
+    #                     for dror in ['', f'_dror_alpha_{alpha}_{severety}']:
+    #
+    #                         # make sure non-snow splits do not consider dror
+    #                         if condition != 'snow' and dror != '':
+    #                             continue
+    #
+    #                         # skip non-dror splits
+    #                         if just_dror and dror == '':
+    #                             continue
+    #
+    #                         test_split = f'test_{condition}_{time}{suffix}{addon}{dror}'
+    #                         test_filename = save_path / f'dense_infos_{test_split}.pkl'
+    #
+    #                         dataset.sample_id_list = None
+    #
+    #                         dataset.set_split(test_split)
+    #
+    #                         # skip the splits that do not exist
+    #                         if dataset.sample_id_list is None:
+    #                             logger.warning(f'{test_split} does not exist')
+    #                             continue
+    #
+    #                         dense_infos_test = dataset.get_infos(logger, num_workers=workers,
+    #                                                              has_label=True, count_inside_pts=True)
+    #
+    #                         with open(test_filename, 'wb') as f:
+    #                             pickle.dump(dense_infos_test, f)
+    #
+    #                         logger.info(f'{test_filename} saved')
+    #
+    #     if train and gt:
+    #
+    #         logger.info('starting to create groundtruth database for data augmentation')
+    #
+    #         dataset.set_split(train_split)
+    #         dataset.create_groundtruth_database(logger, info_path=train_filename, split=train_split)
+    #
+    #         logger.info(f'data preparation for {time}time scenes finished')
 
     pkl_dir = save_path
-
-    for stage in ['train', 'val', 'trainval']:
-
-        if stage == 'train' and not train:
-            continue
-
-        if stage == 'val' and not val:
-            continue
-
-        if stage == 'trainval' and not (train and val):
-            continue
-
-        save_file = f'{pkl_dir}/dense_infos_{stage}_clear{suffix}{addon}.pkl'
-
-        day_file = f'{pkl_dir}/dense_infos_{stage}_clear_day{suffix}{addon}.pkl'
-        night_file = f'{pkl_dir}/dense_infos_{stage}_clear_night{suffix}{addon}.pkl'
-
-        with open(str(day_file), 'rb') as df:
-            day_infos = pickle.load(df)
-
-        with open(str(night_file), 'rb') as nf:
-            night_infos = pickle.load(nf)
-
-        with open(save_file, 'wb') as f:
-            pickle.dump(day_infos + night_infos, f)
-
-        logger.info(f'{save_file} saved')
+    #
+    # for stage in ['train', 'val', 'trainval']:
+    #
+    #     if stage == 'train' and not train:
+    #         continue
+    #
+    #     if stage == 'val' and not val:
+    #         continue
+    #
+    #     if stage == 'trainval' and not (train and val):
+    #         continue
+    #
+    #     save_file = f'{pkl_dir}/dense_infos_{stage}_clear{suffix}{addon}.pkl'
+    #
+    #     # day_file = f'{pkl_dir}/dense_infos_{stage}_clear_day{suffix}{addon}.pkl'
+    #     # night_file = f'{pkl_dir}/dense_infos_{stage}_clear_night{suffix}{addon}.pkl'
+    #
+    #     # with open(str(day_file), 'rb') as df:
+    #     #     day_infos = pickle.load(df)
+    #
+    #     # with open(str(night_file), 'rb') as nf:
+    #     #     night_infos = pickle.load(nf)
+    #
+    #     # with open(save_file, 'wb') as f:
+    #     #     pickle.dump(day_infos + night_infos, f)
+    #
+    #     logger.info(f'{save_file} saved')
 
     if test:
 
@@ -1286,3 +1297,4 @@ if __name__ == '__main__':
                                    data_path=ROOT_DIR / 'data' / 'dense',
                                    save_path=ROOT_DIR / 'data' / 'dense',
                                    suffix=v, addon=a, logger=log)
+                print('finish')

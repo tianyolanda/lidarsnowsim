@@ -1,5 +1,11 @@
 import glob
 import os
+import sys
+current_dir = os.path.split(os.path.abspath(__file__))[0] # current dir
+config_path = current_dir.rsplit('/',2)[0]
+sys.path.append(config_path)
+print(config_path)
+print(sys.path)
 
 import torch
 import tqdm

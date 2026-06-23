@@ -24,7 +24,8 @@ cadcd = {
     ]
 }
 
-dataset_path='/srv/beegfs-benderdata/scratch/trace_martin/data/temp'
+# dataset_path='/srv/beegfs-benderdata/scratch/trace_martin/data/temp'
+dataset_path='/home/ubuntu/datasets/cadc'
 os.chdir(dataset_path)
 
 labeled = True
